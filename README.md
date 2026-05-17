@@ -18,6 +18,34 @@ This is an **unofficial** client for Quicken Simplifi. Before running it against
 
 A starter `.env.example` is shipped at the repo root. Copy it to `.env` and fill in your values; do not commit `.env`.
 
+## Where `SIMPLIFI_CLIENT_SECRET` comes from
+
+Before you can run the tool, you have to put a value in `SIMPLIFI_CLIENT_SECRET`. The most important thing to understand is what that value actually is, because it's not what people usually expect from a "client secret":
+
+- **Quicken does not issue this to you.** There is no developer program, no API key request form, and no OAuth app registration for Simplifi. If you go looking on Quicken's site for "how do I get a Simplifi API client secret", the answer is that no such workflow exists.
+- **It is Quicken's own OAuth client secret.** The pair `(clientId="acme_web", clientSecret=...)` is the credential Quicken's official web app at `app.simplifimoney.com` uses when it calls `https://services.quicken.com/oauth/token`. This library works by **impersonating that web app** to the same OAuth endpoint. You can see the pairing in [simplifiapi/client.py](simplifiapi/client.py).
+- **The value was originally extracted from Quicken's web app** — almost certainly by inspecting the bundled JavaScript or capturing an OAuth request in browser DevTools — and hardcoded as a string literal in `simplifiapi/client.py`. This change moves the literal out of source and reads it from the environment instead, but the *value* the OAuth server expects has not changed.
+
+### Practical paths to set it
+
+You have three real options:
+
+1. **Use the value that was previously committed to this repo.** It sat in source for years and is recoverable from git history:
+
+    ```shell
+    git show 27fcc74:simplifiapi/client.py | grep clientSecret
+    ```
+
+    Put that value into your local `.env` as `SIMPLIFI_CLIENT_SECRET=...`. This is what most users will end up doing. Caveat: if Quicken ever rotates the secret on their side (rare for shared web-client credentials, but possible), this value stops working.
+
+2. **Extract it yourself.** Log in to `app.simplifimoney.com` with browser DevTools open, watch the OAuth `POST` to `services.quicken.com/oauth/token`, and read the `clientSecret` field out of the request body. This is what you'd do if path 1 stops working, or if you'd rather see for yourself that the value is what this README claims it is.
+
+3. **Don't use this tool.** If you're not comfortable running an unofficial client built on extracted Quicken credentials, the safe answer is to not use it. This section is written so you can make that call with eyes open rather than discovering the trust model after you've already shipped your credentials at the OAuth endpoint.
+
+### Why this matters for "secret rotation"
+
+Because the `clientSecret` is one shared value across every user of every Simplifi web-app session (not a per-user credential), Quicken cannot revoke it for just you. Their only remediation is invalidating the secret for the entire `acme_web` OAuth client — which would also break the official web app for every Simplifi customer. They almost certainly won't do that. The practical consequence is that **you cannot rotate this credential**: if it gets compromised on your machine, the only mitigation you have is changing your Simplifi account password (which forces re-auth) and not exposing the secret again. Treat it as a moderately-sensitive shared secret rather than a per-user credential.
+
 ## Install
 
 Install from a clone of this repo:
