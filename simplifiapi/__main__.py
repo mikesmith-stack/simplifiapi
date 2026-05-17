@@ -1,8 +1,10 @@
+"""Entry point for `python -m simplifiapi`.
+
+All logging configuration lives in ``simplifiapi.cli.main``. This module
+is a thin delegating shim.
+"""
+
 from simplifiapi.cli import main
-
-import logging
-
-logging.getLogger("simplifiapi").setLevel(logging.INFO)
 
 if __name__ == "__main__":
     main()

@@ -1,3 +1,70 @@
 [build-system]
-requires = ["setuptools"]
+requires = ["setuptools>=68"]
 build-backend = "setuptools.build_meta"
+
+[project]
+name = "simplifiapi"
+version = "0.1.0"
+description = "An unofficial CLI and Python library for extracting Quicken Simplifi accounts, transactions, tags, and categories to JSON or CSV."
+readme = "README.md"
+requires-python = ">=3.9"
+license = { text = "MIT" }
+authors = [
+    { name = "simplifiapi fork maintainers" }
+]
+keywords = ["simplifi", "quicken", "finance", "cli", "extraction"]
+classifiers = [
+    "Development Status :: 4 - Beta",
+    "Environment :: Console",
+    "Intended Audience :: Developers",
+    "Intended Audience :: End Users/Desktop",
+    "License :: OSI Approved :: MIT License",
+    "Operating System :: OS Independent",
+    "Programming Language :: Python :: 3",
+    "Programming Language :: Python :: 3.9",
+    "Programming Language :: Python :: 3.10",
+    "Programming Language :: Python :: 3.11",
+    "Programming Language :: Python :: 3.12",
+    "Topic :: Office/Business :: Financial",
+    "Topic :: Utilities",
+]
+dependencies = [
+    "requests>=2.31,<3",
+    "pandas>=2,<3",
+    "configargparse>=1.7,<2",
+]
+
+[project.urls]
+Homepage = "https://github.com/rijn/simplifiapi"
+Source = "https://github.com/rijn/simplifiapi"
+Issues = "https://github.com/rijn/simplifiapi/issues"
+
+[project.scripts]
+simplifiapi = "simplifiapi.cli:main"
+
+[project.optional-dependencies]
+dev = [
+    "pytest>=7,<9",
+    "pytest-cov>=4,<6",
+    "responses>=0.23,<1",
+]
+
+[tool.setuptools.packages.find]
+include = ["simplifiapi*"]
+exclude = ["tests*"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+addopts = "-ra --strict-markers"
+markers = [
+    "unit: unit tests with mocked HTTP",
+]
+
+[tool.coverage.run]
+source = ["simplifiapi"]
+branch = false
+
+[tool.coverage.report]
+fail_under = 80
+show_missing = true
+skip_covered = false
